@@ -1,0 +1,121 @@
+{
+    "vehicles": [
+        {
+            "id": "v1",
+            "seats": {
+                "regular": 10,
+                "wheelchair": 2,
+                "stretcher": 1
+            },
+            "hourly_rate": 100,
+            "start_location": "6951 Lennox Avenue, Van Nuys, CA 91405",
+            "start_time": 0
+        },
+        {
+            "id": "v2",
+            "seats": {
+                "regular": 8,
+                "wheelchair": 1,
+                "stretcher": 0
+            },
+            "hourly_rate": 80,
+            "start_location": "6951 Lennox Avenue, Van Nuys, CA 91405",
+            "start_time": 0
+        },
+        {
+            "id": "v3",
+            "seats": {
+                "regular": 15,
+                "wheelchair": 3,
+                "stretcher": 2
+            },
+            "hourly_rate": 150,
+            "start_location": "6951 Lennox Avenue, Van Nuys, CA 91405",
+            "start_time": 0
+        },
+        {
+            "id": "v4",
+            "seats": {
+                "regular": 15,
+                "wheelchair": 3,
+                "stretcher": 2
+            },
+            "hourly_rate": 150,
+            "start_location": "6951 Lennox Avenue, Van Nuys, CA 91405",
+            "start_time": 0
+        },
+        {
+            "id": "v5",
+            "seats": {
+                "regular": 15,
+                "wheelchair": 3,
+                "stretcher": 2
+            },
+            "hourly_rate": 150,
+            "start_location": "6951 Lennox Avenue, Van Nuys, CA 91405",
+            "start_time": 0
+        }
+    ],
+    "bookings": [
+        {
+            "id": "b1",
+            "pickup_time": 9,
+            "pickup_location": "17815 Ventura Boulevard, Encino, CA 91316",
+            "dropoff_location": "17733 Lemarsh Street, Northridge, CA 91325",
+            "required_seats": {
+                "regular": 2,
+                "wheelchair": 1,
+                "stretcher": 0
+            },
+            "unloading_time": 5
+        },
+        {
+            "id": "b2",
+            "pickup_time": 10,
+            "pickup_location": "12151 San Fernando Road, Sylmar, CA 91342",
+            "dropoff_location": "19650 Roscoe Boulevard, Northridge, CA 91324",
+            "required_seats": {
+                "regular": 4,
+                "wheelchair": 0,
+                "stretcher": 0
+            },
+            "unloading_time": 3
+        },
+        {
+            "id": "b3",
+            "pickup_time": 11,
+            "pickup_location": "19650 Roscoe Boulevard, Northridge, CA 91324",
+            "dropoff_location": "12151 San Fernando Road, Sylmar, CA 91342",
+            "required_seats": {
+                "regular": 4,
+                "wheelchair": 0,
+                "stretcher": 0
+            },
+            "unloading_time": 8
+        },
+        {
+            "id": "b4",
+            "pickup_time": 13,
+            "pickup_location": "7150 Tampa Avenue, Reseda, CA 91335",
+            "dropoff_location": "19650 Roscoe Boulevard, Northridge, CA 91324",
+            "required_seats": {
+                "regular": 3,
+                "wheelchair": 1,
+                "stretcher": 0
+            },
+            "unloading_time": 4
+        },
+        {
+            "id": "b5",
+            "pickup_time": 14,
+            "pickup_location": "19650 Roscoe Boulevard, Northridge, CA 91324",
+            "dropoff_location": "7150 Tampa Avenue, Reseda, CA 91335",
+            "required_seats": {
+                "regular": 6,
+                "wheelchair": 0,
+                "stretcher": 0
+            },
+            "unloading_time": 3
+        }
+    ]
+}
