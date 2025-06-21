@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from app.internal.database import connect_to_mongo, close_mongo_connection
 from app.routers import programs, directions
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -13,12 +14,13 @@ async def lifespan(app: FastAPI):
     # Shutdown
     await close_mongo_connection()
 
+
 # Create FastAPI app
 app = FastAPI(
     title="Scheduler API",
     description="A FastAPI backend for the Scheduler application with Program and Vehicle management",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Configure CORS
@@ -34,10 +36,12 @@ app.add_middleware(
 app.include_router(programs.router)
 app.include_router(directions.router)
 
+
 # Health check endpoint
 @app.get("/api/health")
 async def health_check():
     return {"message": "Server is running", "status": "OK"}
+
 
 # Root endpoint
 @app.get("/")

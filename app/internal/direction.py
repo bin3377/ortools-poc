@@ -4,18 +4,20 @@ from dotenv import load_dotenv
 
 from app.internal.models import Direction
 from app.internal.crud import DirectionCRUD
-from app.internal.database import get_database
 
 load_dotenv()
 
-async def get_direction(crud: DirectionCRUD, origin: str, destination: str) -> Direction:
+
+async def get_direction(
+    crud: DirectionCRUD, origin: str, destination: str
+) -> Direction:
     """
     Convenience function to get direction between two locations.
-    
+
     Args:
         origin: Starting location
         destination: Ending location
-        
+
     Returns:
         Direction: Direction object with distance, duration
 
@@ -29,9 +31,9 @@ async def get_direction(crud: DirectionCRUD, origin: str, destination: str) -> D
         return Direction(**cached_direction)
 
     # If not in cache, call Google Maps API
-    gmaps = googlemaps.Client(key=os.getenv('GOOGLE_MAPS_API_KEY'))
+    gmaps = googlemaps.Client(key=os.getenv("GOOGLE_MAPS_API_KEY"))
     directions = gmaps.directions(origin, destination, mode="driving")
-    
+
     if not directions:
         raise ValueError("No route found between the specified locations")
 
@@ -44,5 +46,5 @@ async def get_direction(crud: DirectionCRUD, origin: str, destination: str) -> D
 
     # Save to cache
     await crud.create_direction(origin, destination, direction_data)
-    
+
     return Direction(**direction_data)
