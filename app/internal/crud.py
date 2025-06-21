@@ -4,7 +4,7 @@ from pymongo import AsyncMongoClient
 from pymongo.errors import DuplicateKeyError
 from datetime import datetime, timezone
 
-from app.models import Program, ProgramCreate, ProgramUpdate, Vehicle, VehicleUpdate
+from app.internal.models import Program, ProgramCreate, ProgramUpdate, Vehicle, VehicleUpdate
 
 class DirectionCRUD:
     def __init__(self, database):

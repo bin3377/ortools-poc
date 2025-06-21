@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-import os
 
-from app.database import connect_to_mongo, close_mongo_connection
-from app.routers import programs, direction
+from app.internal.database import connect_to_mongo, close_mongo_connection
+from app.routers import programs, directions
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,7 +32,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(programs.router)
-app.include_router(direction.router)
+app.include_router(directions.router)
 
 # Health check endpoint
 @app.get("/api/health")
@@ -44,4 +43,3 @@ async def health_check():
 @app.get("/")
 async def root():
     return {"message": "Welcome to Scheduler API", "docs": "/docs"}
-

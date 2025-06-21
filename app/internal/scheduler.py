@@ -4,7 +4,6 @@ from typing import List, Dict, Any, Optional
 import os
 from dotenv import load_dotenv
 import math
-from datetime import datetime
 
 load_dotenv()
 
@@ -19,7 +18,7 @@ class VehicleScheduler:
         try:
             hour, minute = map(int, time_str.split(':'))
             return hour * 60 + minute
-        except:
+        except Exception:
             return 0
 
     def _minutes_to_time(self, minutes: int) -> str:
@@ -57,7 +56,7 @@ class VehicleScheduler:
             self.distance_cache[cache_key] = distance
             self.duration_cache[cache_key] = duration
             return distance, duration
-        except Exception as e:
+        except Exception:
             # 如果API调用失败，使用简单的欧几里得距离估算
             distance = math.sqrt((dest_lat - origin_lat)**2 + (dest_lng - origin_lng)**2) * 111  # 大约转换为公里
             duration = max(5, int(distance * 2))  # 简单估算：每公里2分钟

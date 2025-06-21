@@ -1,21 +1,28 @@
-from fastapi import APIRouter, HTTPException, status, Query
+from fastapi import APIRouter, HTTPException, status, Query, Depends
 from typing import Annotated
 import googlemaps
 
-from app.models import Direction
-from app.services import direction_service
+from pymongo import AsyncMongoClient
+
+from app.internal.models import Direction
+from app.internal.direction import get_direction
+from app.internal.crud import DirectionCRUD
+from app.internal.database import get_database
 
 router = APIRouter(prefix="/api/directions", tags=["directions"])
+
+async def get_direction_crud(db: AsyncMongoClient = Depends(get_database)) -> DirectionCRUD:
+    return DirectionCRUD(db)
 
 @router.get("/", response_model=Direction)
 async def get_direction_endpoint(
     origin: Annotated[str, Query(alias="from", description="Starting location")],
-    destination: Annotated[str, Query(alias="to", description="Ending location")]
+    destination: Annotated[str, Query(alias="to", description="Ending location")],
+    crud: DirectionCRUD = Depends(get_direction_crud)
 ):
     """Get direction information between origin and destination"""
     try:
-        direction = await direction_service.get_direction(origin, destination)
-        return direction
+        return await get_direction(crud, origin, destination)
 
     except (ValueError, googlemaps.exceptions.ApiError) as e:
         raise HTTPException(

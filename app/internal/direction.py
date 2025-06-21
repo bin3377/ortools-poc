@@ -1,19 +1,14 @@
-"""
-Direction service for handling direction-related operations.
-This service can be reused across different parts of the application.
-"""
-
 import os
 import googlemaps
 from dotenv import load_dotenv
 
-from app.models import Direction
-from app.crud import DirectionCRUD
-from app.database import get_database
+from app.internal.models import Direction
+from app.internal.crud import DirectionCRUD
+from app.internal.database import get_database
 
 load_dotenv()
 
-async def get_direction(origin: str, destination: str) -> Direction:
+async def get_direction(crud: DirectionCRUD, origin: str, destination: str) -> Direction:
     """
     Convenience function to get direction between two locations.
     
@@ -28,10 +23,6 @@ async def get_direction(origin: str, destination: str) -> Direction:
         ValueError: If no route is found
         googlemaps.exceptions.ApiError: If Google Maps API error occurs
     """
-    # Get database connection
-    db = await get_database()
-    crud = DirectionCRUD(db)
-    
     # Try to get from cache first
     cached_direction = await crud.get_direction(origin, destination)
     if cached_direction:
