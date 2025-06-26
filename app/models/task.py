@@ -1,8 +1,8 @@
-import uuid
 from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional
 
+from nanoid import generate
 from pydantic import BaseModel, Field
 
 from app.models.booking import Booking
@@ -12,13 +12,13 @@ class ScheduleRequest(BaseModel):
     """Schedule request model"""
 
     date: str  # "Month Day, Year" format
-    program_name: str
+    program_name: Optional[str] = None
     debug: Optional[bool] = None
     before_pickup_time: Optional[int] = None  # seconds
     after_pickup_time: Optional[int] = None  # seconds
     pickup_loading_time: Optional[int] = None  # seconds
     dropoff_unloading_time: Optional[int] = None  # seconds
-    bookings: List[Booking] = Field(..., default_factory=list)
+    bookings: List[Booking] = Field(default_factory=list)
 
 
 class TaskStatus(str, Enum):
@@ -30,12 +30,23 @@ class TaskStatus(str, Enum):
     FAILED = "FAILED"
 
 
+class Leg(BaseModel):
+    """Leg model representing a scheduled leg"""
+
+    passenger: str
+    pickup_address: str
+    dropoff_address: str
+    pickup_time: datetime
+    dropoff_time: datetime
+    booking: Optional[Booking] = None
+
+
 class Trip(BaseModel):
     """Trip model representing a scheduled trip"""
 
     program_name: str
     vehicle_name: str
-    bookings: List[Booking]
+    legs: List[Leg]
 
 
 class ScheduleResponse(BaseModel):
@@ -47,16 +58,16 @@ class ScheduleResponse(BaseModel):
 class Task(BaseModel):
     """Base task model"""
 
-    id: str
+    id: str = Field(default_factory=lambda: generate(size=10))
     request: ScheduleRequest
-    status: TaskStatus = Field(..., default=TaskStatus.PENDING)
+    status: TaskStatus = Field(default=TaskStatus.PENDING)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     error_message: Optional[str] = None
     response: Optional[ScheduleResponse] = None
 
 
-class TaskCreateResponse(BaseModel):
+class CreateTaskResponse(BaseModel):
     """Task creation response"""
 
     id: str
@@ -66,16 +77,15 @@ class TaskCRUD:
     def __init__(self, database):
         self.collection = database["tasks"]
 
-    async def create_task(self, request: ScheduleRequest) -> TaskCreateResponse:
+    async def create_task(self, request: ScheduleRequest) -> CreateTaskResponse:
         """Create a new task"""
         task = Task(
-            id=str(uuid.uuid4()),
             request=request,
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
         await self.collection.insert_one(task.model_dump())
-        return TaskCreateResponse(id=task.id)
+        return CreateTaskResponse(id=task.id)
 
     async def get_task(self, id: str) -> Optional[Task]:
         """Get a task by ID"""

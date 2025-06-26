@@ -5,12 +5,12 @@ from typing import List
 
 from dotenv import load_dotenv
 
-from app.models.schedule import TaskCRUD, TaskStatus
+from app.models.task import TaskCRUD, TaskStatus
 from app.services.database import get_database
 from app.services.scheduler import schedule
 
 load_dotenv()
-DEBUG_MODE = os.getenv("DEBUG_MODE").lower() == "true"
+DEBUG_MODE = os.getenv("DEBUG_MODE", "true") == "true"
 PROCESSOR_INTERVAL = os.getenv("PROCESSOR_INTERVAL", "5000")  # Default: 5 seconds
 PROCESSOR_BATCH_SIZE = int(os.getenv("PROCESSOR_BATCH_SIZE", "10"))  # Default: 10
 
@@ -19,10 +19,12 @@ class TaskProcessor:
     """Background task processor using asyncio"""
 
     def __init__(self):
-        self.client = get_database()
-        self.crud = TaskCRUD(self.client)
         self.is_running = False
         self._task: asyncio.Task = None
+
+    async def get_crud(self):
+        db = await get_database()
+        return TaskCRUD(db)
 
     async def process_task(self, id: str):
         """
@@ -36,19 +38,21 @@ class TaskProcessor:
         """
         print(f"📝 Processing task {id} ...")
 
-        task = self.crud.get_task(id)
+        crud = await self.get_crud()
+
+        task = await crud.get_task(id)
 
         if not task:
             raise Exception(f"cannot find task id {id}")
 
         try:
-            self.crud.update_task(id, TaskStatus.PROCESSING)
+            await crud.update_task(id, TaskStatus.PROCESSING)
 
             # Run scheduler
             response = await schedule(task.request)
 
             # Write back success result
-            await self.crud.update_task(
+            await crud.update_task(
                 id=id,
                 status=TaskStatus.COMPLETED,
                 response=response,
@@ -57,7 +61,7 @@ class TaskProcessor:
         except Exception as error:
             # Write back error result
             error_message = str(error)
-            await self.crud.update_task(
+            await crud.update_task(
                 id=id,
                 status=TaskStatus.FAILED,
                 error_message=error_message,
@@ -71,8 +75,10 @@ class TaskProcessor:
         Returns:
             List of processed task IDs
         """
+        crud = await self.get_crud()
+
         # Get pending task IDs
-        ids = await self.crud.get_pending_tasks(limit=PROCESSOR_BATCH_SIZE)
+        ids = await crud.get_pending_tasks(limit=PROCESSOR_BATCH_SIZE)
 
         if not ids:
             if DEBUG_MODE:

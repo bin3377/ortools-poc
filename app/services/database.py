@@ -66,12 +66,22 @@ async def setup_indexes():
 
         program_collection = database.database["programs"]
 
+        # Create unique index on id field for efficient lookups
+        await program_collection.create_index([("id", 1)], unique=True, background=True)
+
         # Create unique index on name field for efficient lookups
         await program_collection.create_index(
             [("name", 1)], unique=True, background=True
         )
 
         print("Program collection indexes created successfully")
+
+        task_collection = database.database["tasks"]
+
+        # Create unique index on id field for efficient lookups
+        await task_collection.create_index([("id", 1)], unique=True, background=True)
+
+        print("Task collection indexes created successfully")
 
     except Exception as e:
         print(f"Error creating direction indexes: {e}")

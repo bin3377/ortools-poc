@@ -6,7 +6,7 @@ from pymongo import AsyncMongoClient
 from app.models.program import Program, ProgramCRUD, Vehicle
 from app.services.database import get_database
 
-router = APIRouter(prefix="/api/program", tags=["programs"])
+router = APIRouter(prefix="/api/program", tags=["program"])
 
 
 async def get_program_crud(db: AsyncMongoClient = Depends(get_database)) -> ProgramCRUD:

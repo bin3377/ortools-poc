@@ -1,16 +1,29 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import os
 from contextlib import asynccontextmanager
 
-from app.services.database import connect_to_mongo, close_mongo_connection
-from app.routers import direction, program
+from dotenv import load_dotenv
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.routers import direction, program, task
+from app.services.database import close_mongo_connection, connect_to_mongo
+from app.services.processor import start_processor
+
+load_dotenv()
+
+PORT = os.getenv("PORT", "8000")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     await connect_to_mongo()
+    # Start the background task processor
+    start_processor()
+    print(f"🚀 Server is starting on port {PORT}")
+
     yield
+
     # Shutdown
     await close_mongo_connection()
 
@@ -35,6 +48,7 @@ app.add_middleware(
 # Include routers
 app.include_router(program.router)
 app.include_router(direction.router)
+app.include_router(task.router)
 
 
 # Health check endpoint
