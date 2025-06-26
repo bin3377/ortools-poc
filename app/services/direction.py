@@ -1,11 +1,12 @@
 import os
+
 import googlemaps
 from dotenv import load_dotenv
 
-from app.internal.models import Direction
-from app.internal.crud import DirectionCRUD
+from app.models.direction import Direction, DirectionCRUD
 
 load_dotenv()
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
 
 async def get_direction(
@@ -31,7 +32,7 @@ async def get_direction(
         return Direction(**cached_direction)
 
     # If not in cache, call Google Maps API
-    gmaps = googlemaps.Client(key=os.getenv("GOOGLE_MAPS_API_KEY"))
+    gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
     directions = gmaps.directions(origin, destination, mode="driving")
 
     if not directions:

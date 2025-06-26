@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.internal.database import connect_to_mongo, close_mongo_connection
-from app.routers import programs, directions
+from app.services.database import connect_to_mongo, close_mongo_connection
+from app.routers import direction, program
 
 
 @asynccontextmanager
@@ -33,8 +33,8 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(programs.router)
-app.include_router(directions.router)
+app.include_router(program.router)
+app.include_router(direction.router)
 
 
 # Health check endpoint

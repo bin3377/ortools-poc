@@ -3,17 +3,10 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from pymongo import AsyncMongoClient
 
-from app.internal.crud import ProgramCRUD
-from app.internal.database import get_database
-from app.internal.models import (
-    Program,
-    ProgramCreate,
-    ProgramUpdate,
-    Vehicle,
-    VehicleUpdate,
-)
+from app.models.program import Program, ProgramCRUD, Vehicle
+from app.services.database import get_database
 
-router = APIRouter(prefix="/api/programs", tags=["programs"])
+router = APIRouter(prefix="/api/program", tags=["programs"])
 
 
 async def get_program_crud(db: AsyncMongoClient = Depends(get_database)) -> ProgramCRUD:
@@ -42,7 +35,7 @@ async def get_program(program_id: str, crud: ProgramCRUD = Depends(get_program_c
 
 @router.post("/", response_model=Program, status_code=status.HTTP_201_CREATED)
 async def create_program(
-    program: ProgramCreate, crud: ProgramCRUD = Depends(get_program_crud)
+    program: Program, crud: ProgramCRUD = Depends(get_program_crud)
 ):
     """Create a new program"""
     try:
@@ -58,7 +51,7 @@ async def create_program(
 @router.put("/{program_id}", response_model=Program)
 async def update_program(
     program_id: str,
-    program_update: ProgramUpdate,
+    program_update: Program,
     crud: ProgramCRUD = Depends(get_program_crud),
 ):
     """Update a program"""
@@ -131,7 +124,7 @@ async def add_vehicle_to_program(
 async def update_vehicle_in_program(
     program_id: str,
     vehicle_id: str,
-    vehicle_update: VehicleUpdate,
+    vehicle_update: Vehicle,
     crud: ProgramCRUD = Depends(get_program_crud),
 ):
     """Update a vehicle in a program"""

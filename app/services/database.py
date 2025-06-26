@@ -1,6 +1,7 @@
 import os
-from pymongo import AsyncMongoClient
+
 from dotenv import load_dotenv
+from pymongo import AsyncMongoClient
 
 load_dotenv()
 
@@ -36,14 +37,14 @@ async def connect_to_mongo():
         print("Successfully connected to MongoDB")
 
         # Create indexes for directions collection
-        await setup_direction_indexes()
+        await setup_indexes()
 
     except Exception as e:
         print(f"Error connecting to MongoDB: {e}")
 
 
-async def setup_direction_indexes():
-    """Setup indexes for the directions collection"""
+async def setup_indexes():
+    """Setup extra indexes for collections"""
     try:
         directions_collection = database.database["directions"]
 
@@ -62,6 +63,15 @@ async def setup_direction_indexes():
         print(
             f"Direction collection indexes created successfully (TTL: {DIRECTION_CACHE_TTL_SECONDS}s)"
         )
+
+        program_collection = database.database["programs"]
+
+        # Create unique index on name field for efficient lookups
+        await program_collection.create_index(
+            [("name", 1)], unique=True, background=True
+        )
+
+        print("Program collection indexes created successfully")
 
     except Exception as e:
         print(f"Error creating direction indexes: {e}")

@@ -1,11 +1,18 @@
-from ortools.sat.python import cp_model
-import googlemaps
-from typing import List, Dict, Any, Optional
-import os
-from dotenv import load_dotenv
 import math
+import os
+from typing import Any, Dict, List, Optional
+
+import googlemaps
+from dotenv import load_dotenv
+from ortools.sat.python import cp_model
+
+from app.models.schedule import ScheduleRequest, ScheduleResponse
 
 load_dotenv()
+
+
+async def schedule(request: ScheduleRequest) -> ScheduleResponse:
+    pass
 
 
 class VehicleScheduler:

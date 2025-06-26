@@ -1,15 +1,14 @@
-from fastapi import APIRouter, HTTPException, status, Query, Depends
 from typing import Annotated
-import googlemaps
 
+import googlemaps
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pymongo import AsyncMongoClient
 
-from app.internal.models import Direction
-from app.internal.direction import get_direction
-from app.internal.crud import DirectionCRUD
-from app.internal.database import get_database
+from app.models.direction import Direction, DirectionCRUD
+from app.services.database import get_database
+from app.services.direction import get_direction
 
-router = APIRouter(prefix="/api/directions", tags=["directions"])
+router = APIRouter(prefix="/api/direction", tags=["direction"])
 
 
 async def get_direction_crud(
