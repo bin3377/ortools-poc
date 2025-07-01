@@ -6,7 +6,7 @@ from typing import List
 from dotenv import load_dotenv
 
 from app.models.task import TaskCRUD, TaskStatus
-from app.services.database import get_database
+from app.services.database import get_task_crud
 from app.services.scheduler import schedule
 
 load_dotenv()
@@ -21,10 +21,12 @@ class TaskProcessor:
     def __init__(self):
         self.is_running = False
         self._task: asyncio.Task = None
+        self._crud: TaskCRUD = None
 
     async def get_crud(self):
-        db = await get_database()
-        return TaskCRUD(db)
+        if not self._crud:
+            self._crud = await get_task_crud()
+        return self._crud
 
     async def process_task(self, id: str):
         """
@@ -46,12 +48,14 @@ class TaskProcessor:
             raise Exception(f"cannot find task id {id}")
 
         try:
+            print("  - Mark as processing...")
             await crud.update_task(id, TaskStatus.PROCESSING)
 
             # Run scheduler
             response = await schedule(task.request)
 
             # Write back success result
+            print("  - Mark as completed...")
             await crud.update_task(
                 id=id,
                 status=TaskStatus.COMPLETED,
@@ -61,6 +65,7 @@ class TaskProcessor:
         except Exception as error:
             # Write back error result
             error_message = str(error)
+            print(f"  - Mark as failed: {error_message}")
             await crud.update_task(
                 id=id,
                 status=TaskStatus.FAILED,

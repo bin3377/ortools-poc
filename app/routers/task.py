@@ -1,14 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pymongo import AsyncMongoClient
 
 from app.models.task import CreateTaskResponse, ScheduleRequest, Task, TaskCRUD
-from app.services.database import get_database
+from app.services.database import get_task_crud
 
 router = APIRouter(prefix="/api/task", tags=["task"])
-
-
-async def get_task_crud(db: AsyncMongoClient = Depends(get_database)) -> TaskCRUD:
-    return TaskCRUD(db)
 
 
 @router.get("/{task_id}", response_model=Task)

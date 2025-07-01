@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import direction, program, task
+from app.routers import direction, program, schedule, task
 from app.services.database import close_mongo_connection, connect_to_mongo
 from app.services.processor import start_processor
 
@@ -49,6 +49,7 @@ app.add_middleware(
 app.include_router(program.router)
 app.include_router(direction.router)
 app.include_router(task.router)
+app.include_router(schedule.router)
 
 
 # Health check endpoint

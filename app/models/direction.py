@@ -7,11 +7,11 @@ from pydantic import BaseModel
 # Direction Models
 class Direction(BaseModel):
     distance_in_meter: int
-    duration_in_seconds: int
+    duration_in_sec: int
 
     model_config = {
         "json_schema_extra": {
-            "example": {"distance_in_meter": 15420, "duration_in_seconds": 1200}
+            "example": {"distance_in_meter": 15420, "duration_in_sec": 1200}
         }
     }
 
@@ -32,7 +32,7 @@ class DirectionCRUD:
             # Return only the direction data, not the full document
             return {
                 "distance_in_meter": doc.get("distance_in_meter"),
-                "duration_in_seconds": doc.get("duration_in_seconds"),
+                "duration_in_sec": doc.get("duration_in_sec"),
             }
         return None
 
@@ -44,7 +44,7 @@ class DirectionCRUD:
         doc = {
             "key": key,
             "distance_in_meter": data["distance_in_meter"],
-            "duration_in_seconds": data["duration_in_seconds"],
+            "duration_in_sec": data["duration_in_sec"],
             "created_at": datetime.now(timezone.utc),
         }
 

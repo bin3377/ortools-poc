@@ -2,19 +2,12 @@ from typing import Annotated
 
 import googlemaps
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pymongo import AsyncMongoClient
 
 from app.models.direction import Direction, DirectionCRUD
-from app.services.database import get_database
+from app.services.database import get_direction_crud
 from app.services.direction import get_direction
 
 router = APIRouter(prefix="/api/direction", tags=["direction"])
-
-
-async def get_direction_crud(
-    db: AsyncMongoClient = Depends(get_database),
-) -> DirectionCRUD:
-    return DirectionCRUD(db)
 
 
 @router.get("/", response_model=Direction)

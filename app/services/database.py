@@ -3,6 +3,10 @@ import os
 from dotenv import load_dotenv
 from pymongo import AsyncMongoClient
 
+from app.models.direction import DirectionCRUD
+from app.models.program import ProgramCRUD
+from app.models.task import TaskCRUD
+
 load_dotenv()
 
 # MongoDB configuration
@@ -92,3 +96,18 @@ async def close_mongo_connection():
     if database.client:
         await database.client.close()
         print("Disconnected from MongoDB")
+
+
+async def get_program_crud() -> ProgramCRUD:
+    db = await get_database()
+    return ProgramCRUD(db)
+
+
+async def get_task_crud() -> TaskCRUD:
+    db = await get_database()
+    return TaskCRUD(db)
+
+
+async def get_direction_crud() -> DirectionCRUD:
+    db = await get_database()
+    return DirectionCRUD(db)

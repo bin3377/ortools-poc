@@ -5,20 +5,7 @@ from typing import List, Optional
 from nanoid import generate
 from pydantic import BaseModel, Field
 
-from app.models.booking import Booking
-
-
-class ScheduleRequest(BaseModel):
-    """Schedule request model"""
-
-    date: str  # "Month Day, Year" format
-    program_name: Optional[str] = None
-    debug: Optional[bool] = None
-    before_pickup_time: Optional[int] = None  # seconds
-    after_pickup_time: Optional[int] = None  # seconds
-    pickup_loading_time: Optional[int] = None  # seconds
-    dropoff_unloading_time: Optional[int] = None  # seconds
-    bookings: List[Booking] = Field(default_factory=list)
+from app.models.inout import ScheduleRequest, ScheduleResponse
 
 
 class TaskStatus(str, Enum):
@@ -28,31 +15,6 @@ class TaskStatus(str, Enum):
     PROCESSING = "PROCESSING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
-
-
-class Leg(BaseModel):
-    """Leg model representing a scheduled leg"""
-
-    passenger: str
-    pickup_address: str
-    dropoff_address: str
-    pickup_time: datetime
-    dropoff_time: datetime
-    booking: Optional[Booking] = None
-
-
-class Trip(BaseModel):
-    """Trip model representing a scheduled trip"""
-
-    program_name: str
-    vehicle_name: str
-    legs: List[Leg]
-
-
-class ScheduleResponse(BaseModel):
-    """Schedule response model"""
-
-    trips: List[Trip]
 
 
 class Task(BaseModel):
@@ -132,7 +94,7 @@ class TaskCRUD:
         }
 
         if response:
-            update_data["response"] = response
+            update_data["response"] = response.model_dump()
 
         if error_message:
             update_data["error_message"] = error_message

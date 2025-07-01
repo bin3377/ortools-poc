@@ -1,16 +1,11 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pymongo import AsyncMongoClient
 
 from app.models.program import Program, ProgramCRUD, Vehicle
-from app.services.database import get_database
+from app.services.database import get_program_crud
 
 router = APIRouter(prefix="/api/program", tags=["program"])
-
-
-async def get_program_crud(db: AsyncMongoClient = Depends(get_database)) -> ProgramCRUD:
-    return ProgramCRUD(db)
 
 
 @router.get("/", response_model=List[Program])

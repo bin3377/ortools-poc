@@ -1,9 +1,12 @@
 from dotenv import load_dotenv
 
-from app.models.task import ScheduleRequest, ScheduleResponse
+from app.models.inout import ScheduleRequest, ScheduleResponse
+from app.services.greedy_scheduler import Scheduler
 
 load_dotenv()
 
 
 async def schedule(request: ScheduleRequest) -> ScheduleResponse:
-    pass
+    """Schedule trips for a given request"""
+    scheduler = Scheduler(request)
+    return await scheduler.calculate()
