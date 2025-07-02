@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from pymongo import AsyncMongoClient
 from pymongo.errors import DuplicateKeyError
 
-from app.models import MobilityAssistanceType
+from app.models.mobility_assistance import MobilityAssistanceType
 
 
 class Vehicle(BaseModel):

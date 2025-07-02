@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.models.inout import ScheduleRequest, ScheduleResponse
-from app.services.scheduler import schedule
+from app.services.schedule import schedule
 
 router = APIRouter(prefix="/api/schedule", tags=["schedule"])
 

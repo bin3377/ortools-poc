@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from app.models.task import TaskCRUD, TaskStatus
 from app.services.database import get_task_crud
-from app.services.scheduler import schedule
+from app.services.schedule import schedule
 
 load_dotenv()
 DEBUG_MODE = os.getenv("DEBUG_MODE", "true") == "true"
@@ -106,7 +106,7 @@ class TaskProcessor:
             if isinstance(result, Exception):
                 print(f"❌ Processing task {id} failed: {result}")
             else:
-                print(f"✅ Processing task {id} succeeded, task id: {result}")
+                print(f"✅ Processing task {id} succeeded")
                 processed_task_ids.append(result)
 
         return processed_task_ids

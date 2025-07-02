@@ -109,13 +109,14 @@ class ScheduleRequest(BaseModel):
     """Schedule request model"""
 
     date: str  # "Month Day, Year" format
-    program_name: Optional[str] = None
     debug: Optional[bool] = None
     before_pickup_time: Optional[int] = None  # seconds
     after_pickup_time: Optional[int] = None  # seconds
     pickup_loading_time: Optional[int] = None  # seconds
     dropoff_unloading_time: Optional[int] = None  # seconds
     bookings: List[Booking] = Field(default_factory=list)
+
+    ortools: Optional[str] = None
 
 
 class ScheduleResultData(BaseModel):
