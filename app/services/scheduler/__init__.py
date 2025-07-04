@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
 
@@ -176,7 +176,9 @@ class TripInfo:
         booking.driver_enroute_time = None
 
         # Set scheduled times
-        booking.scheduled_pickup_time = to_24hr(self.adjusted_pickup_time)
+        booking.scheduled_pickup_time = to_24hr(
+            self.adjusted_pickup_time or self.pickup_time
+        )
         booking.scheduled_dropoff_time = to_24hr(self.dropoff_time())
 
         return Trip(
@@ -191,7 +193,7 @@ class TripInfo:
             last_dropoff_address=booking.dropoff_address,
             last_dropoff_latitude=booking.dropoff_latitude,
             last_dropoff_longitude=booking.dropoff_longitude,
-            first_pickup_time=to_12hr(self.adjusted_pickup_time),
+            first_pickup_time=to_12hr(self.adjusted_pickup_time or self.pickup_time),
             last_dropoff_time=to_12hr(self.dropoff_time()),
             notes=booking.admin_note,
             number_of_passengers=1 + booking.additional_passenger,
@@ -224,6 +226,9 @@ class Scheduler:
         trips = []
         for booking in bookings:
             trip = await TripInfo.create(self.context, booking)
+            trip.earliest_arrival_time = trip.pickup_time - timedelta(
+                seconds=self.context.before_pickup_in_sec()
+            )
             trips.append(trip)
         return trips
 
@@ -242,6 +247,31 @@ class Scheduler:
 
         lines.append("=======================END=======================")
         return "\n".join(lines)
+
+    def _mark_last_leg(self, trips: List[TripInfo]):
+        """Mark the last trip for each passenger"""
+        # Sort trips by pickup time
+        trips.sort(key=lambda t: t.pickup_time)
+
+        # Group trips by passenger (latest first)
+        passenger_trips: Dict[str, List[TripInfo]] = {}
+        for trip in reversed(trips):
+            if trip.passenger not in passenger_trips:
+                passenger_trips[trip.passenger] = []
+            passenger_trips[trip.passenger].append(trip)
+
+        # Mark last trip for passengers with multiple trips
+        for passenger_trip_list in passenger_trips.values():
+            if len(passenger_trip_list) > 1:
+                passenger_trip_list[-1].is_last = True
+                # Last trip of the vehicle
+                passenger_trip_list[0].earliest_arrival_time = passenger_trip_list[
+                    0
+                ].pickup_time
+
+        self.context.debug(f"Converted {len(trips)} trips:")
+        for idx, trip in enumerate(trips):
+            self.context.debug(idx, trip.short())
 
     def _get_response(self, shuttles: List[Shuttle]) -> ScheduleResponse:
         """Generate the final response"""

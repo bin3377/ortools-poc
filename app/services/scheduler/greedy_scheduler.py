@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from app.internal.timeaddr import to_12hr
 from app.services.direction import get_direction
@@ -49,27 +49,6 @@ class GreedyScheduler(Scheduler):
 
         return [shuttle.to_shuttle() for shuttle in plan]
 
-    def _mark_last_leg(self, trips: List[TripInfo]):
-        """Mark the last trip for each passenger"""
-        # Sort trips by pickup time
-        trips.sort(key=lambda t: t.pickup_time)
-
-        # Group trips by passenger (latest first)
-        passenger_trips: Dict[str, List[TripInfo]] = {}
-        for trip in reversed(trips):
-            if trip.passenger not in passenger_trips:
-                passenger_trips[trip.passenger] = []
-            passenger_trips[trip.passenger].append(trip)
-
-        # Mark last trip for passengers with multiple trips
-        for passenger_trip_list in passenger_trips.values():
-            if len(passenger_trip_list) > 1:
-                passenger_trip_list[0].is_last = True
-
-        self.context.debug(f"Converted {len(trips)} trips:")
-        for idx, trip in enumerate(trips):
-            self.context.debug(idx, trip.short())
-
     def _get_priority_trips(self, trips: List[TripInfo]) -> List[List[TripInfo]]:
         """Group trips by priority (0=highest, 2=lowest)"""
         priority_trips: List[List[TripInfo]] = [[], [], []]
@@ -117,13 +96,6 @@ class GreedyScheduler(Scheduler):
                 # No vehicle can fit this trip, create a new one
                 best_shuttle = ShuttleInfo(len(plan) + 1, trip)
                 plan.append(best_shuttle)
-                # First trip of the vehicle
-                if trip.is_last:
-                    trip.earliest_arrival_time = trip.pickup_time
-                else:
-                    trip.earliest_arrival_time = trip.pickup_time - timedelta(
-                        seconds=self.context.before_pickup_in_sec()
-                    )
                 self.context.debug(
                     f"[DECISION]new vehicle: {best_shuttle.name()} # {to_12hr(trip.earliest_arrival_time)}"
                 )

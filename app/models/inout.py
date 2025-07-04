@@ -111,7 +111,7 @@ class Optimization(BaseModel):
     """Objectives model representing the optimization objectives"""
 
     # constraints
-    chain_bookings_for_same_pessenger: bool = Field(default=True)
+    chain_bookings_for_same_passenger: bool = Field(default=True)
 
     # objectives
     minimize_vehicles: bool = Field(default=True)

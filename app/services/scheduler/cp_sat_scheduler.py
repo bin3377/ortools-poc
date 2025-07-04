@@ -47,8 +47,17 @@ class CpSatScheduler(Scheduler):
         return program.vehicles
 
     async def _calculate(self) -> List[Shuttle]:
+        """Calculate the scheduling plan"""
+
+        # Get vehicles
         vehicles = await self._get_vehicles()
+
+        # Convert bookings to trips
         trips = await self._get_trips_from_bookings(self.request.bookings)
+
+        # Mark last legs for passengers with multiple trips
+        self._mark_last_leg(trips)
+
         optimization = self.request.optimization or Optimization()
 
         model = cp_model.CpModel()
@@ -120,7 +129,7 @@ class CpSatScheduler(Scheduler):
                                     t[i, j2] >= t[i, j1] + service_time
                                 ).OnlyEnforceIf([x[i, j1], x[i, j2]])
 
-        if optimization.chain_bookings_for_same_pessenger:
+        if optimization.chain_bookings_for_same_passenger:
             # constraint 6: optional - chain bookings for the same passenger
             for i in range(num_vehicles):
                 for j1 in range(num_trips):
@@ -177,11 +186,21 @@ class CpSatScheduler(Scheduler):
 
                     for j in range(num_trips):
                         if solver.Value(x[i, j]) == 1:
-                            shuttle.trips.append(trips[j].to_trip())
+                            trip = trips[j]
+                            h = solver.Value(t[i, j]) // 60
+                            m = solver.Value(t[i, j]) % 60
+                            trip.adjusted_pickup_time = datetime(
+                                trip.pickup_time.year,
+                                trip.pickup_time.month,
+                                trip.pickup_time.day,
+                                h,
+                                m,
+                            )
+                            shuttle.trips.append(trip.to_trip())
 
                     if shuttle.trips:
-                        # Sort trips by pickup time
-                        shuttle.trips.sort(key=lambda x: x.pickup_time)
+                        # Sort trips by first pickup time
+                        shuttle.trips.sort(key=lambda x: x.first_pickup_time)
                         self.context.debug(
                             f"  {shuttle.shuttle_name}: {len(shuttle.trips)} trips"
                         )
