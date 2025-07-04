@@ -8,11 +8,11 @@ from app.internal.timeaddr import get_date_object, to_12hr, to_24hr
 from app.models.direction import Direction
 from app.models.inout import (
     Booking,
-    Plan,
     ScheduleRequest,
     ScheduleResponse,
     ScheduleResult,
     ScheduleResultData,
+    Shuttle,
     Trip,
 )
 from app.models.mobility_assistance import MobilityAssistanceType
@@ -66,7 +66,7 @@ class SchedulerContext:
         return self.request.dropoff_unloading_time or DEFAULT_DROPOFF_UNLOADING_TIME
 
 
-class BookingInfo:
+class TripInfo:
     """Trip information for scheduling"""
 
     def __init__(
@@ -108,7 +108,7 @@ class BookingInfo:
         booking.travel_time = direction.duration_in_sec
 
     @classmethod
-    async def create(cls, context: SchedulerContext, booking: Booking) -> "BookingInfo":
+    async def create(cls, context: SchedulerContext, booking: Booking) -> "TripInfo":
         """Create TripInfo with async direction lookup"""
         pickup_time = get_date_object(
             context.date_str(), booking.pickup_time, booking.pickup_address
@@ -196,33 +196,12 @@ class BookingInfo:
             notes=booking.admin_note,
             number_of_passengers=1 + booking.additional_passenger,
             trip_complete=booking.trip_complete,
+            short=self.short(),
         )
 
 
-class PlanInfo:
-    """Plan information for scheduling"""
-
-    def __init__(self, idx: int, first_trip: BookingInfo):
-        self.idx = idx
-        self.trips: List[BookingInfo] = [first_trip]
-
-    def name(self) -> str:
-        """Generate vehicle name based on index and mobility assistance codes"""
-        for trip in self.trips:
-            return f"{self.idx}{trip.assistance.value}"
-
-    def add_trip(self, next_trip: BookingInfo):
-        """Add a trip to this vehicle"""
-        self.trips.append(next_trip)
-
-    def to_plan(self) -> Plan:
-        """Convert to Plan model"""
-        trips = [trip.to_trip() for trip in self.trips]
-        return Plan(trips=trips, shuttle_name=self.name())
-
-
 class Scheduler:
-    """Main scheduler class"""
+    """Base class for scheduler"""
 
     def __init__(self, request: ScheduleRequest):
         self.request = request
@@ -231,26 +210,24 @@ class Scheduler:
     async def schedule(self) -> ScheduleResponse:
         """Schedule trips for a given request"""
 
-        plan = await self._calculate()
+        shuttles = await self._calculate()
         # Debug output
-        self.context.debug(self._get_text_plan(plan))
+        self.context.debug(self._get_text_plan(shuttles))
 
-        return self._get_response(plan)
+        return self._get_response(shuttles)
 
-    async def _calculate(self) -> List[PlanInfo]:
+    async def _calculate(self) -> List[Shuttle]:
         pass
 
-    async def _get_trips_from_bookings(
-        self, bookings: List[Booking]
-    ) -> List[BookingInfo]:
+    async def _get_trips_from_bookings(self, bookings: List[Booking]) -> List[TripInfo]:
         """Convert bookings to trip info objects"""
         trips = []
         for booking in bookings:
-            trip = await BookingInfo.create(self.context, booking)
+            trip = await TripInfo.create(self.context, booking)
             trips.append(trip)
         return trips
 
-    def _get_text_plan(self, plan: List[PlanInfo]) -> str:
+    def _get_text_plan(self, shuttles: List[Shuttle]) -> str:
         """Generate text representation of the plan for debugging"""
         lines = [
             "=================================================",
@@ -258,23 +235,22 @@ class Scheduler:
             "======================BEGIN======================",
         ]
 
-        for vehicle in plan:
-            lines.append(f"Shuttle = {vehicle.name()}")
-            for idx, trip in enumerate(vehicle.trips):
-                lines.append(f"{idx} {trip.short()}")
+        for shuttle in shuttles:
+            lines.append(f"Shuttle = {shuttle.shuttle_name}")
+            for idx, trip in enumerate(shuttle.trips):
+                lines.append(f"{idx} {trip.short}")
 
         lines.append("=======================END=======================")
         return "\n".join(lines)
 
-    def _get_response(self, plan: List[PlanInfo]) -> ScheduleResponse:
+    def _get_response(self, shuttles: List[Shuttle]) -> ScheduleResponse:
         """Generate the final response"""
-        vehicles = [vehicle.to_plan() for vehicle in plan]
 
         return ScheduleResponse(
             result=ScheduleResult(
                 error_code=0,
                 message="Successfully retrieved trips data.",
                 status="success",
-                data=ScheduleResultData(vehicle_trip_list=vehicles),
+                data=ScheduleResultData(vehicle_trip_list=shuttles),
             )
         )

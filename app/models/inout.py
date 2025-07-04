@@ -83,9 +83,11 @@ class Trip(BaseModel):
     trip_complete: Optional[bool] = None
     bookings: List[Booking]
 
+    short: Optional[str] = None
 
-class Plan(BaseModel):
-    """Vehicle model representing a vehicle with assigned trips"""
+
+class Shuttle(BaseModel):
+    """Shuttle model representing a vehicle with assigned trips"""
 
     shuttle_name: str
     shuttle_id: Optional[str] = None
@@ -105,24 +107,37 @@ class Plan(BaseModel):
     trips: List[Trip]
 
 
+class Optimization(BaseModel):
+    """Objectives model representing the optimization objectives"""
+
+    # constraints
+    chain_bookings_for_same_pessenger: bool = Field(default=True)
+
+    # objectives
+    minimize_vehicles: bool = Field(default=True)
+    minimize_total_duration: bool = Field(default=False)
+
+
 class ScheduleRequest(BaseModel):
     """Schedule request model"""
 
     date: str  # "Month Day, Year" format
     debug: Optional[bool] = None
+
     before_pickup_time: Optional[int] = None  # seconds
     after_pickup_time: Optional[int] = None  # seconds
     pickup_loading_time: Optional[int] = None  # seconds
     dropoff_unloading_time: Optional[int] = None  # seconds
     bookings: List[Booking] = Field(default_factory=list)
 
-    ortools: Optional[str] = None
+    optimization: Optional[Optimization] = None
+    program_name: Optional[str] = None
 
 
 class ScheduleResultData(BaseModel):
     """Schedule result data"""
 
-    vehicle_trip_list: List[Plan]
+    vehicle_trip_list: List[Shuttle]
 
 
 class ScheduleResult(BaseModel):

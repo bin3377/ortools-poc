@@ -16,6 +16,14 @@ class MobilityAssistanceType(str, Enum):
             return 1
         return 2
 
+    def compatible(self, bookingType: "MobilityAssistanceType") -> bool:
+        """Check if mobility assistance of vehicle is compatible with booking type"""
+        if self.value == bookingType.value:
+            return True
+        if bookingType == self.AMBULATORY:
+            return True
+        return False
+
     @classmethod
     def from_string(cls, s: str) -> "MobilityAssistanceType":
         """Parse mobility assistance from a string"""

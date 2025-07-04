@@ -12,7 +12,7 @@ from app.models.mobility_assistance import MobilityAssistanceType
 class Vehicle(BaseModel):
     id: str = Field(default_factory=lambda: generate(size=10))
     name: str = Field(..., min_length=1, max_length=100)
-    mobility_assistance: List[MobilityAssistanceType] = Field(..., default_factory=list)
+    assistance: MobilityAssistanceType = MobilityAssistanceType.AMBULATORY
 
 
 class Program(BaseModel):
@@ -47,6 +47,13 @@ class ProgramCRUD:
     async def get_program_by_id(self, id: str) -> Optional[Program]:
         """Get a program by ID"""
         program_dict = await self.collection.find_one({"id": id})
+        if program_dict:
+            return Program(**program_dict)
+        return None
+
+    async def get_program_by_name(self, name: str) -> Optional[Program]:
+        """Get a program by name"""
+        program_dict = await self.collection.find_one({"name": name})
         if program_dict:
             return Program(**program_dict)
         return None
