@@ -39,5 +39,15 @@ class MobilityAssistanceType(str, Enum):
     def from_strings(cls, *args: str) -> "MobilityAssistanceType":
         """Parse mobility assistance from strings"""
         for arg in args:
-            return cls.from_string(arg)
+            one = cls.from_string(arg)
+            if one != cls.AMBULATORY:
+                return one
+        return cls.AMBULATORY
+
+    @classmethod
+    def from_multiple(cls, *args: "MobilityAssistanceType") -> "MobilityAssistanceType":
+        """Parse mobility assistance from multiple types"""
+        for arg in args:
+            if arg != cls.AMBULATORY:
+                return arg
         return cls.AMBULATORY

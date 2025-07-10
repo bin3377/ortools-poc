@@ -89,7 +89,7 @@ const Scheduling = () => {
       WC: 'Wheelchair',
       GUR: 'Stretcher'
     };
-    return labels[assistance] || 'Unknown';
+    return labels[assistance] || 'Ambulatory';
   };
 
   const renderBookingPreview = () => {
@@ -209,18 +209,26 @@ const Scheduling = () => {
                       <thead>
                         <tr>
                           <th>Trip ID</th>
+                          <th>Passenger</th>
                           <th>Pickup Time</th>
                           <th>Dropoff Time</th>
-                          <th>Passengers</th>
+                          <th>Assistance</th>
                         </tr>
                       </thead>
                       <tbody>
                         {shuttle.trips.map((trip, tripIndex) => (
                           <tr key={tripIndex}>
                             <td>{trip.trip_id || `Trip ${tripIndex + 1}`}</td>
+                            <td>{trip.bookings[0].passenger_firstname} {trip.bookings[0].passenger_lastname}</td>
                             <td>{trip.first_pickup_time}</td>
                             <td>{trip.last_dropoff_time}</td>
-                            <td>{trip.number_of_passengers}</td>
+                            <td>
+                              {trip.bookings[0].mobility_assistance?.map((assistance, idx) => (
+                                <span key={idx} className={`badge ${getMobilityBadge(assistance.toUpperCase())}`}>
+                                  {getMobilityLabel(assistance.toUpperCase())}
+                                </span>
+                              ))}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

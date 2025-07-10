@@ -2,6 +2,8 @@ from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field
 
+from app.models.mobility_assistance import MobilityAssistanceType
+
 
 class Booking(BaseModel):
     """Booking model representing a ride booking"""
@@ -54,6 +56,21 @@ class Booking(BaseModel):
     willcall_call_time: Optional[Any] = None
     total_seat_count: Optional[int] = None
 
+    def assistance(self) -> MobilityAssistanceType:
+        """Get mobility assistance type"""
+        return MobilityAssistanceType.from_strings(*self.mobility_assistance)
+
+    def short(self) -> str:
+        """Short string representation for debugging"""
+
+        def passenger() -> str:
+            return f"{self.passenger_firstname[0] if self.passenger_firstname else ''}.{self.passenger_lastname[0] if self.passenger_lastname else ''}"
+
+        def addr(addr: str) -> str:
+            return addr.split(",")[0]
+
+        return f"B-{self.booking_id} {passenger()} {self.pickup_time} {addr(self.pickup_address)}-{addr(self.dropoff_address)} [{self.assistance().value}]"
+
 
 class Trip(BaseModel):
     """Trip model representing a scheduled trip"""
@@ -83,7 +100,16 @@ class Trip(BaseModel):
     trip_complete: Optional[bool] = None
     bookings: List[Booking]
 
-    short: Optional[str] = None
+    def assistance(self) -> MobilityAssistanceType:
+        """Get mobility assistance type"""
+        return MobilityAssistanceType.from_multiple(
+            *[booking.assistance() for booking in self.bookings]
+        )
+
+    def short(self) -> str:
+        """Short string representation for debugging"""
+        bookings = "\n    ".join([booking.short() for booking in self.bookings])
+        return f"T-{self.trip_id} {self.first_pickup_time}-{self.last_dropoff_time} [{self.assistance().value}]\n    {bookings}"
 
 
 class Shuttle(BaseModel):
@@ -105,6 +131,17 @@ class Shuttle(BaseModel):
     driver_team: Optional[str] = None
 
     trips: List[Trip]
+
+    def assistance(self) -> MobilityAssistanceType:
+        """Get mobility assistance type"""
+        if not self.shuttle_wheelchair:
+            return MobilityAssistanceType.AMBULATORY
+        return MobilityAssistanceType.from_string(self.shuttle_wheelchair)
+
+    def short(self) -> str:
+        """Short string representation for debugging"""
+        trips = "\n  ".join([trip.short() for trip in self.trips])
+        return f"S-{self.shuttle_id or ''} {self.shuttle_name} [{self.assistance().value}]\n  {trips}"
 
 
 class Optimization(BaseModel):

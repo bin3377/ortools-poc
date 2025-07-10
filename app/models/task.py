@@ -20,7 +20,12 @@ class TaskStatus(str, Enum):
 class Task(BaseModel):
     """Base task model"""
 
-    id: str = Field(default_factory=lambda: generate(size=10))
+    id: str = Field(
+        default_factory=lambda: generate(
+            alphabet="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            size=10,
+        )
+    )
     request: ScheduleRequest
     status: TaskStatus = Field(default=TaskStatus.PENDING)
     created_at: datetime = Field(default_factory=datetime.now)

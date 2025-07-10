@@ -95,8 +95,7 @@ def get_datetime(date_str: str, time_str: str, timezone_id: str) -> datetime:
             )
         )
 
-        # Convert to UTC
-        return local_dt.astimezone(pytz.UTC)
+        return local_dt
 
     except Exception as e:
         raise ValueError(

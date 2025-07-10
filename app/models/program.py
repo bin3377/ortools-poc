@@ -10,13 +10,24 @@ from app.models.mobility_assistance import MobilityAssistanceType
 
 
 class Vehicle(BaseModel):
-    id: str = Field(default_factory=lambda: generate(size=10))
+    id: str = Field(
+        default_factory=lambda: generate(
+            alphabet="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            size=10,
+        )
+    )
     name: str = Field(..., min_length=1, max_length=100)
     assistance: MobilityAssistanceType = MobilityAssistanceType.AMBULATORY
+    seats: int = Field(default=1)
 
 
 class Program(BaseModel):
-    id: str = Field(default_factory=lambda: generate(size=10))
+    id: str = Field(
+        default_factory=lambda: generate(
+            alphabet="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            size=10,
+        )
+    )
     name: str = Field(..., min_length=1, max_length=100)
     vehicles: List[Vehicle] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=datetime.now)

@@ -186,17 +186,18 @@ class CpSatScheduler(Scheduler):
 
                     for j in range(num_trips):
                         if solver.Value(x[i, j]) == 1:
-                            trip = trips[j]
-                            h = solver.Value(t[i, j]) // 60
-                            m = solver.Value(t[i, j]) % 60
-                            trip.adjusted_pickup_time = datetime(
-                                trip.pickup_time.year,
-                                trip.pickup_time.month,
-                                trip.pickup_time.day,
-                                h,
-                                m,
-                            )
-                            shuttle.trips.append(trip.to_trip())
+                            trips[j].adjusted_pickup_time = trips[j].pickup_time
+
+                            # h = solver.Value(t[i, j]) // 60
+                            # m = solver.Value(t[i, j]) % 60
+                            # trip.adjusted_pickup_time = datetime(
+                            #     trip.pickup_time.year,
+                            #     trip.pickup_time.month,
+                            #     trip.pickup_time.day,
+                            #     h,
+                            #     m,
+                            # )
+                            shuttle.trips.append(trips[j].to_trip())
 
                     if shuttle.trips:
                         # Sort trips by first pickup time
