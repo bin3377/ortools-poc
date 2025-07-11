@@ -152,6 +152,8 @@ class Shuttle(BaseModel):
 class Optimization(BaseModel):
     """Objectives model representing the optimization objectives"""
 
+    optimizer: str = Field(default="ortools")
+
     # constraints
     chain_bookings_for_same_passenger: bool = Field(default=True)
     multi_load_passengers: bool = Field(default=False)
