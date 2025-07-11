@@ -1,8 +1,10 @@
 import os
+from datetime import datetime, timedelta
 from typing import List
 
 from dotenv import load_dotenv
 
+from app.internal.timeaddr import get_date_object
 from app.models.inout import (
     ScheduleRequest,
     ScheduleResponse,
@@ -63,6 +65,17 @@ class SchedulerContext:
         """Extra time for dropoff unloading (in seconds)"""
         return self.request.dropoff_unloading_time or DEFAULT_DROPOFF_UNLOADING_TIME
 
+    def datetime_to_minutes(self, dt: datetime) -> int:
+        """Convert datetime to minutes since midnight"""
+        return dt.hour * 60 + dt.minute
+
+    def minutes_to_datetime(self, minutes: int) -> datetime:
+        """Convert minutes since midnight to datetime"""
+        base_date = get_date_object(
+            self.date_str(), "00:00", self.request.bookings[0].pickup_address
+        )
+        return base_date + timedelta(minutes=minutes)
+
 
 class Scheduler:
     """Base class for scheduler"""
@@ -74,11 +87,26 @@ class Scheduler:
     async def schedule(self) -> ScheduleResponse:
         """Schedule trips for a given request"""
 
-        shuttles = await self._calculate()
-        # Debug output
-        self.context.debug(self._get_text_plan(shuttles))
+        try:
+            shuttles = await self._calculate()
+            # Debug output
+            self.context.debug(self._get_text_plan(shuttles))
 
-        return self._get_response(shuttles)
+            return self._get_response(shuttles)
+        except ValueError as e:
+            return self._get_response_error(e)
+
+    def _get_response_error(self, error: Exception) -> ScheduleResponse:
+        """Generate the final response"""
+
+        return ScheduleResponse(
+            result=ScheduleResult(
+                error_code=1,
+                message=str(error),
+                status="error",
+                data=None,
+            )
+        )
 
     async def _calculate(self) -> List[Shuttle]:
         pass

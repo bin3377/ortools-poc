@@ -9,15 +9,16 @@ class Booking(BaseModel):
     """Booking model representing a ride booking"""
 
     booking_id: str
-    passenger_id: str
     passenger_firstname: str
     passenger_lastname: str
     additional_passenger: int
     mobility_assistance: List[str]
-    program_name: str
     pickup_time: str  # HH:mm format
     pickup_address: str
     dropoff_address: str
+
+    passenger_id: str
+    program_name: str
     ride_status: int
 
     # Optional fields
@@ -60,16 +61,20 @@ class Booking(BaseModel):
         """Get mobility assistance type"""
         return MobilityAssistanceType.from_strings(*self.mobility_assistance)
 
+    def total_seats(self) -> int:
+        """Total number of seats for this booking"""
+        return 1 + self.additional_passenger
+
+    def passenger(self) -> str:
+        return f"{self.passenger_firstname[0] if self.passenger_firstname else ''}.{self.passenger_lastname[0] if self.passenger_lastname else ''}"
+
     def short(self) -> str:
         """Short string representation for debugging"""
-
-        def passenger() -> str:
-            return f"{self.passenger_firstname[0] if self.passenger_firstname else ''}.{self.passenger_lastname[0] if self.passenger_lastname else ''}"
 
         def addr(addr: str) -> str:
             return addr.split(",")[0]
 
-        return f"B-{self.booking_id} {passenger()} {self.pickup_time} {addr(self.pickup_address)}-{addr(self.dropoff_address)} [{self.assistance().value}]"
+        return f"B-{self.booking_id} {self.passenger()} {self.pickup_time} {addr(self.pickup_address)}-{addr(self.dropoff_address)} [{self.assistance().value}]"
 
 
 class Trip(BaseModel):
@@ -132,16 +137,16 @@ class Shuttle(BaseModel):
 
     trips: List[Trip]
 
-    def assistance(self) -> MobilityAssistanceType:
-        """Get mobility assistance type"""
-        if not self.shuttle_wheelchair:
-            return MobilityAssistanceType.AMBULATORY
-        return MobilityAssistanceType.from_string(self.shuttle_wheelchair)
+    # def assistance(self) -> MobilityAssistanceType:
+    #     """Get mobility assistance type"""
+    #     if not self.shuttle_wheelchair:
+    #         return MobilityAssistanceType.AMBULATORY
+    #     return MobilityAssistanceType.from_string(self.shuttle_wheelchair)
 
     def short(self) -> str:
         """Short string representation for debugging"""
         trips = "\n  ".join([trip.short() for trip in self.trips])
-        return f"S-{self.shuttle_id or ''} {self.shuttle_name} [{self.assistance().value}]\n  {trips}"
+        return f"S-{self.shuttle_id or ''} {self.shuttle_name} [{self.shuttle_wheelchair}]\n  {trips}"
 
 
 class Optimization(BaseModel):
@@ -149,6 +154,7 @@ class Optimization(BaseModel):
 
     # constraints
     chain_bookings_for_same_passenger: bool = Field(default=True)
+    multi_load_passengers: bool = Field(default=False)
 
     # objectives
     minimize_vehicles: bool = Field(default=True)
@@ -168,7 +174,7 @@ class ScheduleRequest(BaseModel):
     bookings: List[Booking] = Field(default_factory=list)
 
     optimization: Optional[Optimization] = None
-    program_name: Optional[str] = None
+    program_id: Optional[str] = None
 
 
 class ScheduleResultData(BaseModel):
@@ -183,7 +189,7 @@ class ScheduleResult(BaseModel):
     status: str
     error_code: int
     message: str
-    data: ScheduleResultData
+    data: Optional[ScheduleResultData]
 
 
 class ScheduleResponse(BaseModel):

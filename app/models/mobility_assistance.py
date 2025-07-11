@@ -28,9 +28,9 @@ class MobilityAssistanceType(str, Enum):
     def from_string(cls, s: str) -> "MobilityAssistanceType":
         """Parse mobility assistance from a string"""
         s_upper = s.upper()
-        if s_upper == "STRETCHER":
+        if s_upper == "STRETCHER" or s_upper == "GUR":
             return cls.STRETCHER
-        elif s_upper == "WHEELCHAIR":
+        elif s_upper == "WHEELCHAIR" or s_upper == "WC":
             return cls.WHEELCHAIR
         else:
             return cls.AMBULATORY

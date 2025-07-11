@@ -28,11 +28,7 @@ class TripInfo:
         self.dropoff_address = booking.dropoff_address
 
         # Passenger ID or full name if empty
-        self.passenger = (
-            booking.passenger_id
-            if booking.passenger_id
-            else f"{booking.passenger_firstname} {booking.passenger_lastname}"
-        )
+        self.passenger = f"{booking.passenger_firstname} {booking.passenger_lastname}"
 
         # Parse mobility assistance
         self.assistance = MobilityAssistanceType.from_strings(
@@ -143,7 +139,6 @@ class TripInfo:
             notes=booking.admin_note,
             number_of_passengers=1 + booking.additional_passenger,
             trip_complete=booking.trip_complete,
-            short=self.short(),
         )
 
 
@@ -175,6 +170,7 @@ class ShuttleInfo:
         return Shuttle(
             trips=trips,
             shuttle_name=self.name(),
+            shuttle_wheelchair=self.assistance().value,
             shuttle_id=generate(
                 alphabet="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
                 size=10,
